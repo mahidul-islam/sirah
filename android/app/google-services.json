@@ -29,6 +29,13 @@
             {
               "client_id": "863324622340-tc9j0bmeg1aqbsm2jv2h80ilmbec9r0n.apps.googleusercontent.com",
               "client_type": 3
+            },
+            {
+              "client_id": "863324622340-24b6hieqcfcirqjp9lhpjuq7981264q4.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.arrijal.sirah"
+              }
             }
           ]
         }
