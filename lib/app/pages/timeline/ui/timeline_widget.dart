@@ -268,10 +268,90 @@ class _TimelineWidgetState extends State<TimelineWidget> {
               color: const Color.fromRGBO(238, 240, 242, 0.81),
               height: 56.0,
               width: double.infinity,
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceAround,
+                children: <Widget>[
+                  MaterialButton(
+                    child: const Icon(Icons.arrow_back_ios),
+                    onPressed: () {
+                      _focusOnDesiredEntry(next: false);
+                    },
+                  ),
+                  MaterialButton(
+                    child: const Text('debug'),
+                    onPressed: () {
+                      _timeline?.selectedId = '[#2f979]';
+                      print(_timeline?.allEntries[0].id);
+                      setState(() {});
+                    },
+                  ),
+                  MaterialButton(
+                    child: const Icon(Icons.arrow_forward_ios),
+                    onPressed: () {
+                      _focusOnDesiredEntry(next: true);
+                    },
+                  ),
+                ],
+              ),
             ),
           ],
         ),
       ),
     );
+  }
+
+  void _focusOnDesiredEntry({bool next = true}) {
+    // TimelineEntry? _currentEntry;
+    double _year = 570.5;
+    double _distance = 0.01;
+    if (_timeline?.selectedId != null) {
+      for (int i = 0; i < (_timeline?.allEntries.length ?? 0); i++) {
+        if (_timeline?.allEntries[i].id == _timeline?.selectedId) {
+          // if (_timeline?.allEntries[i].start == 570.5) {
+          //   _timeline?.selectedId = _timeline?.allEntries[i + 1].id;
+          //   continue;
+          // }
+          if (next) {
+            if (i != (_timeline?.allEntries.length ?? 0) - 1) {
+              _year = _timeline?.allEntries[i + 1].start ?? 570.5;
+              _timeline?.selectedId = _timeline?.allEntries[i + 1].id;
+              _distance = (_timeline?.allEntries[i + 1].start ?? 0) -
+                  (_timeline?.allEntries[i].start ?? 0);
+              _distance = _distance - (_distance / 5);
+            } else {
+              _year = _timeline?.allEntries[0].start ?? 570.5;
+              _timeline?.selectedId = _timeline?.allEntries[0].id;
+            }
+          } else {
+            if (i != 0) {
+              _year = _timeline?.allEntries[i - 1].start ?? 570.5;
+              _timeline?.selectedId = _timeline?.allEntries[i - 1].id;
+              double _temp = (_timeline?.allEntries[i].start ?? 0) -
+                  (_timeline?.allEntries[i - 1].start ?? 0);
+              _temp = _temp - (_temp / 5);
+              _distance = _temp < _distance ? _temp : _distance;
+            } else {
+              _year = _timeline
+                      ?.allEntries[(_timeline?.allEntries.length ?? 0) - 1]
+                      .start ??
+                  570.5;
+              _timeline?.selectedId = _timeline
+                  ?.allEntries[(_timeline?.allEntries.length ?? 0) - 1].id;
+            }
+          }
+          break;
+        }
+      }
+    } else {
+      for (int i = 0; i < (_timeline?.allEntries.length ?? 0); i++) {
+        if (_timeline?.allEntries[i].start == 570.5) {
+          _timeline?.selectedId = _timeline?.allEntries[i].id;
+        }
+      }
+    }
+    setState(() {
+      _timeline?.setViewport(
+          start: _year - _distance, end: _year + _distance, animate: true);
+    });
   }
 }

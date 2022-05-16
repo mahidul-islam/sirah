@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:math';
 import 'dart:typed_data';
+import 'package:flutter/material.dart';
 import "package:flutter/scheduler.dart";
 import "dart:ui" as ui;
 import "package:flutter/services.dart" show rootBundle;
@@ -17,6 +18,8 @@ class Timeline {
   double _lastFrameTime = 0.0;
   double _height = 0.0;
   List<TimelineEntry>? _entries;
+
+  List<TimelineEntry>? _allEntries;
   List<TimelineAsset>? _renderAssets;
   double _lastEntryY = 0.0;
   double _offsetDepth = 0.0;
@@ -28,6 +31,7 @@ class Timeline {
   double _lastAssetY = 0.0;
 
   List<TimelineEntry> get entries => _entries ?? [];
+  List<TimelineEntry> get allEntries => _allEntries ?? [];
   double get renderOffsetDepth => _renderOffsetDepth;
   double get renderLabelX => _renderLabelX;
   List<TimelineAsset> get renderAssets => _renderAssets ?? [];
@@ -37,6 +41,7 @@ class Timeline {
   double get end => _end;
   double get renderStart => _renderStart ?? 0;
   double get renderEnd => _renderEnd ?? 0;
+  String? selectedId;
 
   /// Some aptly named constants for properly aligning the Timeline view.
   static const double LineWidth = 2.0;
@@ -65,6 +70,7 @@ class Timeline {
   static const double ViewportPaddingTop = 120.0;
   static const double ViewportPaddingBottom = 100.0;
   static const int SteadyMilliseconds = 500;
+  // Random rd = Random();
 
   Timeline({required String data}) {
     loadFromBundle(data).then((bool success) {
@@ -140,6 +146,7 @@ class Timeline {
 
         timelineEntry.asset = asset;
       }
+      timelineEntry.id = UniqueKey().toString();
       allEntries.add(timelineEntry);
     }
 
@@ -151,6 +158,8 @@ class Timeline {
         return 0;
       }
     });
+
+    _allEntries = allEntries;
 
     _entries = <TimelineEntry>[];
     // build up hierarchy (eras are grouped into spanning eras and events are placed into the eras they belong to)

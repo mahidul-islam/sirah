@@ -191,6 +191,10 @@ class TimelineRenderObject extends RenderBox {
             ui.TextStyle(color: const Color.fromRGBO(255, 255, 255, 1.0)));
 
       builder.addText(item.label);
+      // TODO: add tick sign instead of *
+      if (item.id == timeline.selectedId) {
+        builder.addText(' *');
+      }
       ui.Paragraph labelParagraph = builder.build();
       labelParagraph
           .layout(const ui.ParagraphConstraints(width: maxLabelWidth));
