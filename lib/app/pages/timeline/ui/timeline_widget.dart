@@ -132,6 +132,18 @@ class _TimelineWidgetState extends State<TimelineWidget> {
     }
 
     return Scaffold(
+      appBar: AppBar(
+        iconTheme: const IconThemeData(
+          color: Colors.black, //change your color here
+        ),
+        title: const Text(
+          'সিরাহ',
+          style: TextStyle(color: Colors.black),
+        ),
+        backgroundColor: Colors.white,
+        elevation: 0,
+      ),
+      drawer: _getDrawer(),
       floatingActionButton: FabCircularMenu(
         ringColor: const Color.fromARGB(255, 125, 195, 184).withOpacity(0.8),
         fabCloseIcon: const Icon(Icons.clear_rounded, color: Colors.white),
@@ -264,38 +276,80 @@ class _TimelineWidgetState extends State<TimelineWidget> {
               timeline: _timeline!,
               touchBubble: onTouchBubble,
             ),
-            Container(
-              color: const Color.fromRGBO(238, 240, 242, 0.81),
-              height: 56.0,
-              width: double.infinity,
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceAround,
-                children: <Widget>[
-                  MaterialButton(
-                    child: const Icon(Icons.arrow_back_ios),
-                    onPressed: () {
-                      _focusOnDesiredEntry(next: false);
-                    },
-                  ),
-                  MaterialButton(
-                    child: const Text('debug'),
-                    onPressed: () {
-                      _timeline?.selectedId = '[#2f979]';
-                      print(_timeline?.allEntries[0].id);
-                      setState(() {});
-                    },
-                  ),
-                  MaterialButton(
-                    child: const Icon(Icons.arrow_forward_ios),
-                    onPressed: () {
-                      _focusOnDesiredEntry(next: true);
-                    },
-                  ),
-                ],
-              ),
-            ),
+            Positioned(right: 0, child: _getNextPrev()),
           ],
         ),
+      ),
+    );
+  }
+
+  Widget? _getDrawer() {
+    // if (_timeline?.allEntries == null ||
+    //     (_timeline?.allEntries.isEmpty ?? true)) {
+    //   return Drawer(
+    //     child: Center(
+    //       child: Loader.circular(),
+    //     ),
+    //   );
+    // }
+    return Drawer(
+      child: ListView.builder(
+        itemCount: _timeline?.allEntries.length,
+        itemBuilder: (BuildContext context, int index) {
+          if (index == 0) return DrawerHeader(child: Text('ArRijal Sirah App'));
+          return GestureDetector(
+            onTap: () {
+              if (index < 2) {
+                _timeline?.selectedId = _timeline?.allEntries[index].id;
+              }
+              _timeline?.selectedId = _timeline?.allEntries[index - 1].id;
+              Navigator.of(context).pop();
+              _focusOnDesiredEntry(next: true);
+            },
+            child: SizedBox(
+              height: 56.0,
+              child: Center(
+                  child: Text(
+                '${_timeline?.allEntries[index].label}',
+                maxLines: 2,
+              )),
+            ),
+          );
+        },
+      ),
+    );
+  }
+
+  Widget _getNextPrev() {
+    return Container(
+      color: const Color.fromRGBO(238, 240, 242, 0.81),
+      // height: 100.0,
+      width: 56.0,
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.spaceAround,
+        children: <Widget>[
+          MaterialButton(
+            child: const Icon(Icons.arrow_upward),
+            onPressed: () {
+              _focusOnDesiredEntry(next: false);
+            },
+          ),
+          // MaterialButton(
+
+          //   child: const Text('debug'),
+          //   onPressed: () {
+          //     _timeline?.selectedId = '[#2f979]';
+          //     print(_timeline?.allEntries[0].id);
+          //     setState(() {});
+          //   },
+          // ),
+          MaterialButton(
+            child: const Icon(Icons.arrow_downward),
+            onPressed: () {
+              _focusOnDesiredEntry(next: true);
+            },
+          ),
+        ],
       ),
     );
   }
@@ -304,6 +358,13 @@ class _TimelineWidgetState extends State<TimelineWidget> {
     // TimelineEntry? _currentEntry;
     double _year = 570.5;
     double _distance = 0.01;
+    if (_timeline?.selectedId == null) {
+      for (int i = 0; i < (_timeline?.allEntries.length ?? 0); i++) {
+        if (_timeline?.allEntries[i].start == 530) {
+          _timeline?.selectedId = _timeline?.allEntries[i].id;
+        }
+      }
+    }
     if (_timeline?.selectedId != null) {
       for (int i = 0; i < (_timeline?.allEntries.length ?? 0); i++) {
         if (_timeline?.allEntries[i].id == _timeline?.selectedId) {
@@ -340,12 +401,6 @@ class _TimelineWidgetState extends State<TimelineWidget> {
             }
           }
           break;
-        }
-      }
-    } else {
-      for (int i = 0; i < (_timeline?.allEntries.length ?? 0); i++) {
-        if (_timeline?.allEntries[i].start == 570.5) {
-          _timeline?.selectedId = _timeline?.allEntries[i].id;
         }
       }
     }
