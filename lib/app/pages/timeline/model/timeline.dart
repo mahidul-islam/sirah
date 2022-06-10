@@ -76,14 +76,14 @@ class Timeline {
     loadFromBundle(data).then((bool success) {
       // Double check: Make sure we have height by now...
       if (_entries != null) {
-        double scale = _height == 0.0
-            ? 1.0
-            : _height / (_entries!.first.end! - _entries!.first.start!);
+        // double scale = _height == 0.0
+        //     ? 1.0
+        //     : _height / (_entries!.first.end! - _entries!.first.start!);
         // We use the scale to pad by the bubble height when we set the first range.
-        setViewport(
-            start: _entries!.first.start! - BubbleHeight / scale,
-            end: _entries!.first.end! + BubbleHeight / scale,
-            animate: true);
+        // setViewport(
+        //     start: (_entries?.first.start ?? -1400) - BubbleHeight / scale,
+        //     end: (_entries?.first.end ?? 2020) + BubbleHeight / scale,
+        //     animate: true);
         advance(0.0, false);
       }
     });

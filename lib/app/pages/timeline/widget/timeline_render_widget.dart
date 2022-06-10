@@ -46,7 +46,7 @@ class TimelineRenderObject extends RenderBox {
 
   final Ticks _ticks = Ticks();
   // It needs to be initialized but this is causing error.
-  Timeline _timeline = Timeline(data: '');
+  Timeline _timeline = Timeline(data: '[]');
   final List<TapTarget> _tapTargets = <TapTarget>[];
   TouchBubbleCallback? touchBubble;
 
@@ -193,7 +193,7 @@ class TimelineRenderObject extends RenderBox {
       builder.addText(item.label);
       // TODO: add tick sign instead of *
       if (item.id == timeline.selectedId) {
-        builder.addText(' *');
+        builder.addText('*');
       }
       ui.Paragraph labelParagraph = builder.build();
       labelParagraph

@@ -1,5 +1,5 @@
+import 'package:connectivity/connectivity.dart';
 import 'package:dartz/dartz.dart' as d;
-import 'package:fab_circular_menu/fab_circular_menu.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:sirah/app/pages/timeline/model/timeline.dart';
@@ -69,16 +69,16 @@ class _TimelineWidgetState extends State<TimelineWidget> {
         print('show error');
       }
     }, (Timeline timeline) {
-      setState(() {
-        _timeline = timeline;
-        scaleProper();
-      });
+      _timeline = timeline;
+      scaleProper();
+      setState(() {});
     });
   }
 
   Future<void> scaleProper() async {
     await Future.delayed(const Duration(milliseconds: 500));
     _timeline?.setViewport(start: 564, end: 590, animate: true);
+    setState(() {});
   }
 
   void _scaleStart(ScaleStartDetails details) {
@@ -133,138 +133,50 @@ class _TimelineWidgetState extends State<TimelineWidget> {
 
     return Scaffold(
       appBar: AppBar(
-        iconTheme: const IconThemeData(
-          color: Colors.black, //change your color here
+        iconTheme: IconThemeData(
+          color: Colors.black.withOpacity(0.5), //change your color here
         ),
-        title: const Text(
+        title: Text(
           'সিরাহ',
-          style: TextStyle(color: Colors.black),
+          style: TextStyle(color: Colors.black.withOpacity(0.87)),
         ),
         backgroundColor: Colors.white,
-        elevation: 0,
-      ),
-      drawer: _getDrawer(),
-      floatingActionButton: FabCircularMenu(
-        ringColor: const Color.fromARGB(255, 125, 195, 184).withOpacity(0.8),
-        fabCloseIcon: const Icon(Icons.clear_rounded, color: Colors.white),
-        fabOpenIcon: const Icon(
-          Icons.add,
-          size: 35,
-          color: Colors.white,
-        ),
-        fabCloseColor: const Color.fromARGB(255, 125, 195, 184),
-        fabOpenColor: const Color.fromARGB(255, 238, 155, 75),
-        children: <Widget>[
-          Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              IconButton(
-                icon: const Icon(
-                  Icons.info_outline_rounded,
-                  size: 32,
-                  color: Colors.white,
-                ),
-                onPressed: () {
-                  Navigator.of(context).pushNamed(Routes.topicDetails,
-                      arguments: <String, dynamic>{
-                        'article': TimelineEntry()
-                          ..label = 'আমাদের সম্পর্কে'
-                          ..articleFilename = 'about_us.txt',
-                      });
-                },
-              ),
-              const Text(
-                'About Us',
-                style: TextStyle(color: Colors.white),
-              )
-            ],
+        actions: <Widget>[
+          IconButton(
+            icon: Icon(
+              Icons.replay,
+              color: Colors.black.withOpacity(0.5),
+            ),
+            tooltip: 'Reset',
+            onPressed: () async {
+              ConnectivityResult _connect =
+                  await Connectivity().checkConnectivity();
+              if (_connect == ConnectivityResult.none) {
+                _timeline?.setViewport(start: 564, end: 590, animate: true);
+              } else {
+                _getTimeline();
+              }
+              setState(() {});
+            },
           ),
-          Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  GestureDetector(
-                    onTapDown: (_) {
-                      zooming = true;
-                      _zoom(zoomIn: true);
-                    },
-                    onTapUp: (_) {
-                      zooming = false;
-                    },
-                    child: const Icon(
-                      Icons.add_circle_outline,
-                      size: 32,
-                      color: Colors.white,
-                    ),
-                  ),
-                  GestureDetector(
-                    onTapDown: (_) {
-                      zooming = true;
-                      _zoom(zoomIn: false);
-                    },
-                    onTapUp: (_) {
-                      zooming = false;
-                    },
-                    child: const Icon(
-                      Icons.remove_circle_outline,
-                      size: 32,
-                      color: Colors.white,
-                    ),
-                  ),
-                ],
-              ),
-              const Text(
-                'Zoom InOut',
-                style: TextStyle(color: Colors.white),
-              )
-            ],
-          ),
-          Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              IconButton(
-                icon: const Icon(
-                  Icons.cached_rounded,
-                  size: 32,
-                  color: Colors.white,
-                ),
-                onPressed: () {
-                  setState(() {
-                    _getTimeline();
-                  });
-                },
-              ),
-              const Text(
-                'Reload',
-                style: TextStyle(color: Colors.white),
-              )
-            ],
-          ),
-          Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              IconButton(
-                icon: const Icon(
-                  Icons.replay,
-                  size: 32,
-                  color: Colors.white,
-                ),
-                onPressed: () {
-                  setState(() {
-                    _timeline?.setViewport(start: 564, end: 590, animate: true);
-                  });
-                },
-              ),
-              const Text(
-                'Reset',
-                style: TextStyle(color: Colors.white),
-              )
-            ],
+          IconButton(
+            icon: Icon(
+              Icons.info_outline_rounded,
+              color: Colors.black.withOpacity(0.5),
+            ),
+            onPressed: () {
+              Navigator.of(context)
+                  .pushNamed(Routes.topicDetails, arguments: <String, dynamic>{
+                'article': TimelineEntry()
+                  ..label = 'আমাদের সম্পর্কে'
+                  ..articleFilename = 'about_us.txt',
+              });
+            },
           ),
         ],
+        elevation: 0,
       ),
+      drawer: _timeline?.allEntries == null ? null : _getDrawer(),
       body: GestureDetector(
         onScaleStart: _scaleStart,
         onScaleUpdate: _scaleUpdate,
@@ -276,7 +188,10 @@ class _TimelineWidgetState extends State<TimelineWidget> {
               timeline: _timeline!,
               touchBubble: onTouchBubble,
             ),
-            Positioned(right: 0, child: _getNextPrev()),
+            Positioned(
+                right: 16,
+                bottom: MediaQuery.of(context).padding.bottom + 24,
+                child: _getNextPrev()),
           ],
         ),
       ),
@@ -284,22 +199,18 @@ class _TimelineWidgetState extends State<TimelineWidget> {
   }
 
   Widget? _getDrawer() {
-    // if (_timeline?.allEntries == null ||
-    //     (_timeline?.allEntries.isEmpty ?? true)) {
-    //   return Drawer(
-    //     child: Center(
-    //       child: Loader.circular(),
-    //     ),
-    //   );
-    // }
+    if (_timeline?.allEntries == null ||
+        (_timeline?.allEntries.isEmpty ?? true)) {
+      return null;
+    }
     return Drawer(
       child: ListView.builder(
         itemCount: _timeline?.allEntries.length,
         itemBuilder: (BuildContext context, int index) {
-          if (index == 0) return DrawerHeader(child: Text('ArRijal Sirah App'));
+          // if (index == 0) return DrawerHeader(child: Text('ArRijal Sirah App'));
           return GestureDetector(
             onTap: () {
-              if (index < 2) {
+              if (index < 1) {
                 _timeline?.selectedId = _timeline?.allEntries[index].id;
               }
               _timeline?.selectedId = _timeline?.allEntries[index - 1].id;
@@ -321,30 +232,39 @@ class _TimelineWidgetState extends State<TimelineWidget> {
   }
 
   Widget _getNextPrev() {
-    return Container(
-      color: const Color.fromRGBO(238, 240, 242, 0.81),
+    return SizedBox(
       // height: 100.0,
       width: 56.0,
       child: Column(
         mainAxisAlignment: MainAxisAlignment.spaceAround,
         children: <Widget>[
           MaterialButton(
-            child: const Icon(Icons.arrow_upward),
+            height: 56,
+            minWidth: 56,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(8),
+            ),
+            color: Colors.white,
+            child: Icon(
+              Icons.arrow_upward,
+              color: Colors.black.withOpacity(0.5),
+            ),
             onPressed: () {
               _focusOnDesiredEntry(next: false);
             },
           ),
-          // MaterialButton(
-
-          //   child: const Text('debug'),
-          //   onPressed: () {
-          //     _timeline?.selectedId = '[#2f979]';
-          //     print(_timeline?.allEntries[0].id);
-          //     setState(() {});
-          //   },
-          // ),
+          const SizedBox(height: 8),
           MaterialButton(
-            child: const Icon(Icons.arrow_downward),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(8),
+            ),
+            minWidth: 56,
+            height: 56,
+            color: Colors.white,
+            child: Icon(
+              Icons.arrow_downward,
+              color: Colors.black.withOpacity(0.5),
+            ),
             onPressed: () {
               _focusOnDesiredEntry(next: true);
             },
