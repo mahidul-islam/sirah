@@ -156,6 +156,7 @@ class _TimelineWidgetState extends State<TimelineWidget> {
               } else {
                 _getTimeline();
               }
+              _timeline?.selectedId = null;
               setState(() {});
             },
           ),
@@ -211,7 +212,7 @@ class _TimelineWidgetState extends State<TimelineWidget> {
           return GestureDetector(
             onTap: () {
               if (index < 1) {
-                _timeline?.selectedId = _timeline?.allEntries[index].id;
+                _timeline?.selectedId = _timeline?.allEntries[index + 1].id;
               }
               _timeline?.selectedId = _timeline?.allEntries[index - 1].id;
               Navigator.of(context).pop();
@@ -274,6 +275,10 @@ class _TimelineWidgetState extends State<TimelineWidget> {
     );
   }
 
+  // double _getMinimumDistance() {
+  //   return 0.01;
+  // }
+
   void _focusOnDesiredEntry({bool next = true}) {
     // TimelineEntry? _currentEntry;
     double _year = 570.5;
@@ -310,7 +315,7 @@ class _TimelineWidgetState extends State<TimelineWidget> {
               double _temp = (_timeline?.allEntries[i].start ?? 0) -
                   (_timeline?.allEntries[i - 1].start ?? 0);
               _temp = _temp - (_temp / 5);
-              _distance = _temp < _distance ? _temp : _distance;
+              _distance = _temp > _distance ? _temp : _distance;
             } else {
               _year = _timeline
                       ?.allEntries[(_timeline?.allEntries.length ?? 0) - 1]
