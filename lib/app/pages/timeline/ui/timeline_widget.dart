@@ -33,6 +33,8 @@ class _TimelineWidgetState extends State<TimelineWidget> {
 
   TapTarget? _touchedBubble;
 
+  final GlobalKey<ScaffoldState> _key = GlobalKey();
+
   @override
   void initState() {
     _getTimeline();
@@ -132,51 +134,7 @@ class _TimelineWidgetState extends State<TimelineWidget> {
     }
 
     return Scaffold(
-      appBar: AppBar(
-        iconTheme: IconThemeData(
-          color: Colors.black.withOpacity(0.5), //change your color here
-        ),
-        title: Text(
-          'সিরাহ',
-          style: TextStyle(color: Colors.black.withOpacity(0.87)),
-        ),
-        backgroundColor: Colors.white,
-        actions: <Widget>[
-          IconButton(
-            icon: Icon(
-              Icons.replay,
-              color: Colors.black.withOpacity(0.5),
-            ),
-            tooltip: 'Reset',
-            onPressed: () async {
-              ConnectivityResult _connect =
-                  await Connectivity().checkConnectivity();
-              if (_connect == ConnectivityResult.none) {
-                _timeline?.setViewport(start: 564, end: 590, animate: true);
-              } else {
-                _getTimeline();
-              }
-              _timeline?.selectedId = null;
-              setState(() {});
-            },
-          ),
-          IconButton(
-            icon: Icon(
-              Icons.info_outline_rounded,
-              color: Colors.black.withOpacity(0.5),
-            ),
-            onPressed: () {
-              Navigator.of(context)
-                  .pushNamed(Routes.topicDetails, arguments: <String, dynamic>{
-                'article': TimelineEntry()
-                  ..label = 'আমাদের সম্পর্কে'
-                  ..articleFilename = 'about_us.txt',
-              });
-            },
-          ),
-        ],
-        elevation: 0,
-      ),
+      key: _key,
       drawer: _timeline?.allEntries == null ? null : _getDrawer(),
       body: GestureDetector(
         onScaleStart: _scaleStart,
@@ -188,6 +146,75 @@ class _TimelineWidgetState extends State<TimelineWidget> {
             TimelineRenderWidget(
               timeline: _timeline!,
               touchBubble: onTouchBubble,
+            ),
+            Container(
+              color: Colors.white,
+              height: 56.0 + MediaQuery.of(context).padding.top,
+              padding: EdgeInsets.only(top: MediaQuery.of(context).padding.top),
+              width: double.infinity,
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: <Widget>[
+                  Row(
+                    children: <Widget>[
+                      IconButton(
+                          onPressed: () {
+                            _key.currentState?.openDrawer();
+                          },
+                          icon: Icon(
+                            Icons.menu,
+                            color: Colors.black.withOpacity(0.5),
+                          )),
+                      Container(
+                        padding: const EdgeInsets.only(left: 24),
+                        child: Text(
+                          'সিরাহ',
+                          style: TextStyle(
+                              fontSize: 20,
+                              color: Colors.black.withOpacity(0.87)),
+                        ),
+                      ),
+                    ],
+                  ),
+                  Row(
+                    children: <Widget>[
+                      IconButton(
+                        icon: Icon(
+                          Icons.replay,
+                          color: Colors.black.withOpacity(0.5),
+                        ),
+                        tooltip: 'Reset',
+                        onPressed: () async {
+                          ConnectivityResult _connect =
+                              await Connectivity().checkConnectivity();
+                          if (_connect == ConnectivityResult.none) {
+                            _timeline?.setViewport(
+                                start: 564, end: 590, animate: true);
+                          } else {
+                            _getTimeline();
+                          }
+                          _timeline?.selectedId = null;
+                          setState(() {});
+                        },
+                      ),
+                      IconButton(
+                        icon: Icon(
+                          Icons.info_outline_rounded,
+                          color: Colors.black.withOpacity(0.5),
+                        ),
+                        onPressed: () {
+                          Navigator.of(context).pushNamed(Routes.topicDetails,
+                              arguments: <String, dynamic>{
+                                'article': TimelineEntry()
+                                  ..label = 'আমাদের সম্পর্কে'
+                                  ..articleFilename = 'about_us.txt',
+                              });
+                        },
+                      ),
+                    ],
+                  )
+                ],
+              ),
             ),
             Positioned(
                 right: 16,
