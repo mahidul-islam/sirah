@@ -81,13 +81,14 @@ class _TimelineWidgetState extends State<TimelineWidget> {
               if (text.isEmpty) {
                 _serchResult = _timeline?.allEntries ?? [];
               } else {
-                _serchResult = _serchResult.where((element) {
-                  if (element.label.contains(text)) {
-                    return true;
-                  } else {
-                    return false;
-                  }
-                }).toList();
+                _serchResult = (_timeline?.allEntries.where((element) {
+                      if (element.label.contains(text)) {
+                        return true;
+                      } else {
+                        return false;
+                      }
+                    }).toList()) ??
+                    [];
               }
               if (state != null) {
                 state!(() {});
@@ -115,17 +116,23 @@ class _TimelineWidgetState extends State<TimelineWidget> {
                           itemBuilder: (BuildContext context, int index) {
                             return GestureDetector(
                               onTap: () {
-                                if (index < 1) {
-                                  _timeline?.selectedId =
-                                      _serchResult[index + 1].id;
-                                  Navigator.of(context).pop();
-                                  _focusOnDesiredEntry(next: false);
-                                  return;
-                                }
+                                // if (index < 1) {
+                                //   _timeline?.selectedId =
+                                //       _serchResult[index + 1].id;
+                                //   Navigator.of(context).pop();
+                                //   _focusOnDesiredEntry(next: false);
+                                //   return;
+                                // }
+                                // _timeline?.selectedId =
+                                //     _serchResult[index - 1].id;
+                                // Navigator.of(context).pop();
+                                // _focusOnDesiredEntry(next: true);
+                                int? _index = _getIndexFromEventStartDate(
+                                    _serchResult[index].start);
                                 _timeline?.selectedId =
-                                    _serchResult[index - 1].id;
+                                    _timeline?.allEntries[_index ?? 7].id;
                                 Navigator.of(context).pop();
-                                _focusOnDesiredEntry(next: true);
+                                _focusOnEventByIndex(_index ?? 7);
                               },
                               child: SizedBox(
                                 height: 56.0,
