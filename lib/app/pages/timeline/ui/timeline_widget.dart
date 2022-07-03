@@ -37,8 +37,11 @@ class _TimelineWidgetState extends State<TimelineWidget> {
 
   TapTarget? _touchedBubble;
   bool? _nextPressedInDetailsPage;
+  List<TimelineEntry> _serchResult = [];
+  final TextEditingController _controller = TextEditingController();
 
   final GlobalKey<ScaffoldState> _key = GlobalKey();
+  void Function(void Function())? state;
 
   @override
   void initState() {
@@ -63,6 +66,90 @@ class _TimelineWidgetState extends State<TimelineWidget> {
   //     await Future.delayed(const Duration(milliseconds: 100));
   //   }
   // }
+
+  void openSearchBox() {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: TextField(
+            controller: _controller,
+            autofocus: true,
+            onChanged: (String text) {
+              if (text.isEmpty) {
+                _serchResult = _timeline?.allEntries ?? [];
+              } else {
+                _serchResult = _serchResult.where((element) {
+                  if (element.label.contains(text)) {
+                    return true;
+                  } else {
+                    return false;
+                  }
+                }).toList();
+              }
+              if (state != null) {
+                state!(() {});
+              }
+            },
+          ),
+          shape: const RoundedRectangleBorder(
+              borderRadius: BorderRadius.all(Radius.circular(20))),
+          content: SingleChildScrollView(
+            child: StatefulBuilder(
+              builder: (context, popUpState) {
+                state = popUpState;
+                return SizedBox(
+                  width: double.maxFinite,
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: <Widget>[
+                      ConstrainedBox(
+                        constraints: BoxConstraints(
+                          maxHeight: MediaQuery.of(context).size.height * 0.4,
+                        ),
+                        child: ListView.builder(
+                          shrinkWrap: true,
+                          itemCount: _serchResult.length,
+                          itemBuilder: (BuildContext context, int index) {
+                            return GestureDetector(
+                              onTap: () {
+                                if (index < 1) {
+                                  _timeline?.selectedId =
+                                      _serchResult[index + 1].id;
+                                  Navigator.of(context).pop();
+                                  _focusOnDesiredEntry(next: false);
+                                  return;
+                                }
+                                _timeline?.selectedId =
+                                    _serchResult[index - 1].id;
+                                Navigator.of(context).pop();
+                                _focusOnDesiredEntry(next: true);
+                              },
+                              child: SizedBox(
+                                height: 56.0,
+                                width: MediaQuery.of(context).size.width,
+                                child: Center(
+                                  child: Text(
+                                    _serchResult[index].label,
+                                    maxLines: 2,
+                                    textAlign: TextAlign.center,
+                                  ),
+                                ),
+                              ),
+                            );
+                          },
+                        ),
+                      ),
+                    ],
+                  ),
+                );
+              },
+            ),
+          ),
+        );
+      },
+    );
+  }
 
   Future<void> _getTimeline() async {
     if (widget.timeline == null) {
@@ -111,7 +198,7 @@ class _TimelineWidgetState extends State<TimelineWidget> {
           .pushNamed(Routes.topicDetails, arguments: <String, dynamic>{
         'article': _touchedBubble!.entry!,
         'timeline': _timeline,
-      }) as bool;
+      }) as bool?;
       // await Future.delayed(const Duration(milliseconds: 500));
       _doFurtherAction();
     }
@@ -314,6 +401,18 @@ class _TimelineWidgetState extends State<TimelineWidget> {
                       ),
                       IconButton(
                         icon: Icon(
+                          Icons.search,
+                          color: Colors.black.withOpacity(0.5),
+                        ),
+                        tooltip: 'Search',
+                        onPressed: () async {
+                          _serchResult = _timeline?.allEntries ?? [];
+                          _controller.text = '';
+                          openSearchBox();
+                        },
+                      ),
+                      IconButton(
+                        icon: Icon(
                           Icons.info_outline_rounded,
                           color: Colors.black.withOpacity(0.5),
                         ),
@@ -351,13 +450,13 @@ class _TimelineWidgetState extends State<TimelineWidget> {
       child: ListView.builder(
         itemCount: _timeline?.allEntries.length,
         itemBuilder: (BuildContext context, int index) {
-          // if (index == 0) return DrawerHeader(child: Text('ArRijal Sirah App'));
           return GestureDetector(
             onTap: () {
               if (index < 1) {
                 _timeline?.selectedId = _timeline?.allEntries[index + 1].id;
                 Navigator.of(context).pop();
                 _focusOnDesiredEntry(next: false);
+                return;
               }
               _timeline?.selectedId = _timeline?.allEntries[index - 1].id;
               Navigator.of(context).pop();
