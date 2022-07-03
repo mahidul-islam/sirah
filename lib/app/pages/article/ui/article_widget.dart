@@ -1,10 +1,13 @@
+import 'dart:async';
+
 import 'package:dartz/dartz.dart' as d;
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-// import 'package:flutter/services.dart' show rootBundle;
 import 'package:flutter_markdown/flutter_markdown.dart';
 import 'package:sirah/app/pages/article/repo/aritcle_repo.dart';
+import 'package:sirah/app/pages/timeline/model/timeline.dart';
 import 'package:sirah/app/pages/timeline/model/timeline_entry.dart';
+import 'package:sirah/app/routes/routes.dart';
 import 'package:sirah/colors.dart';
 import 'package:sirah/shared/util/loader.dart';
 
@@ -13,7 +16,13 @@ import 'package:sirah/shared/util/loader.dart';
 class ArticleWidget extends StatefulWidget {
   final TimelineEntry article;
 
-  const ArticleWidget({required this.article, Key? key}) : super(key: key);
+  const ArticleWidget({
+    required this.article,
+    required this.timeline,
+    Key? key,
+  }) : super(key: key);
+
+  final Timeline timeline;
 
   @override
   _ArticleWidgetState createState() => _ArticleWidgetState();
@@ -127,73 +136,140 @@ class _ArticleWidgetState extends State<ArticleWidget> {
       onRefresh: () async {
         await _getTimeline(widget.article.articleFilename ?? 'sample.txt');
       },
-      child: Scaffold(
-          body: Container(
-              color: const Color.fromRGBO(255, 255, 255, 1),
-              child: Stack(children: <Widget>[
-                Column(children: <Widget>[
-                  Container(height: devicePadding.top),
-                  SizedBox(
-                      height: 56.0,
-                      width: double.infinity,
-                      child: IconButton(
-                        alignment: Alignment.centerLeft,
-                        icon: const Icon(Icons.arrow_back),
-                        padding: const EdgeInsets.only(left: 20.0, right: 20.0),
-                        color: Colors.black.withOpacity(0.5),
-                        onPressed: () {
-                          Navigator.pop(context, true);
-                        },
-                      )),
-                  Expanded(
-                      child: SingleChildScrollView(
-                          padding: const EdgeInsets.only(
-                              left: 20, right: 20, bottom: 30),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: <Widget>[
-                              Padding(
-                                padding: const EdgeInsets.only(top: 30.0),
-                                child: Row(children: [
-                                  Expanded(
-                                    child: Column(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.start,
-                                        children: [
-                                          Text(_title,
-                                              textAlign: TextAlign.left,
-                                              style: TextStyle(
-                                                color: darkText.withOpacity(
-                                                    darkText.opacity * 0.87),
-                                                fontSize: 25.0,
-                                                height: 1.1,
-                                                fontFamily: "Roboto",
-                                              )),
-                                          Text(_subTitle,
-                                              textAlign: TextAlign.left,
-                                              style: TextStyle(
-                                                  color: darkText.withOpacity(
-                                                      darkText.opacity * 0.5),
-                                                  fontSize: 17.0,
-                                                  height: 1.5,
-                                                  fontFamily: "Roboto"))
-                                        ]),
+      child: Stack(
+        children: <Widget>[
+          Scaffold(
+              body: Container(
+                  color: const Color.fromRGBO(255, 255, 255, 1),
+                  child: Stack(children: <Widget>[
+                    Column(children: <Widget>[
+                      Container(height: devicePadding.top),
+                      SizedBox(
+                          height: 56.0,
+                          width: double.infinity,
+                          child: IconButton(
+                            alignment: Alignment.centerLeft,
+                            icon: const Icon(Icons.arrow_back),
+                            padding:
+                                const EdgeInsets.only(left: 20.0, right: 20.0),
+                            color: Colors.black.withOpacity(0.5),
+                            onPressed: () {
+                              Navigator.of(context).pop();
+                              Navigator.of(context).pop();
+                              Navigator.of(context).pushNamed(Routes.index,
+                                  arguments: <String, dynamic>{
+                                    'timeline': widget.timeline,
+                                  });
+                              // Navigator.of(context).pop();
+                            },
+                          )),
+                      Expanded(
+                          child: SingleChildScrollView(
+                              padding: const EdgeInsets.only(
+                                  left: 20, right: 20, bottom: 30),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: <Widget>[
+                                  Padding(
+                                    padding: const EdgeInsets.only(top: 30.0),
+                                    child: Row(children: [
+                                      Expanded(
+                                        child: Column(
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.start,
+                                            children: [
+                                              Text(_title,
+                                                  textAlign: TextAlign.left,
+                                                  style: TextStyle(
+                                                    color: darkText.withOpacity(
+                                                        darkText.opacity *
+                                                            0.87),
+                                                    fontSize: 25.0,
+                                                    height: 1.1,
+                                                    fontFamily: "Roboto",
+                                                  )),
+                                              Text(_subTitle,
+                                                  textAlign: TextAlign.left,
+                                                  style: TextStyle(
+                                                      color:
+                                                          darkText.withOpacity(
+                                                              darkText.opacity *
+                                                                  0.5),
+                                                      fontSize: 17.0,
+                                                      height: 1.5,
+                                                      fontFamily: "Roboto"))
+                                            ]),
+                                      ),
+                                    ]),
                                   ),
-                                ]),
-                              ),
-                              Container(
-                                  margin: const EdgeInsets.only(
-                                      top: 20, bottom: 20),
-                                  height: 1,
-                                  color: Colors.black.withOpacity(0.11)),
-                              MarkdownBody(
-                                  data: _articleMarkdown ?? '',
-                                  styleSheet: _markdownStyleSheet),
-                              const SizedBox(height: 100),
-                            ],
-                          )))
-                ])
-              ]))),
+                                  Container(
+                                      margin: const EdgeInsets.only(
+                                          top: 20, bottom: 20),
+                                      height: 1,
+                                      color: Colors.black.withOpacity(0.11)),
+                                  MarkdownBody(
+                                      data: _articleMarkdown ?? '',
+                                      styleSheet: _markdownStyleSheet),
+                                  const SizedBox(height: 100),
+                                ],
+                              )))
+                    ])
+                  ]))),
+          Visibility(
+            visible: widget.article.label != 'আমাদের সম্পর্কে',
+            child: Positioned(
+                right: 16,
+                bottom: MediaQuery.of(context).padding.bottom + 24,
+                child: _getNextPrev()),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _getNextPrev() {
+    return SizedBox(
+      height: 56.0,
+      // width: 56.0,
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceAround,
+        children: <Widget>[
+          MaterialButton(
+            height: 56,
+            minWidth: 56,
+            shape: RoundedRectangleBorder(
+              // side: BorderSide.,
+              side: BorderSide(color: Colors.black.withOpacity(0.5)),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            color: Colors.white,
+            child: Icon(
+              Icons.arrow_back,
+              color: Colors.black.withOpacity(0.5),
+            ),
+            onPressed: () {
+              Navigator.of(context).pop(false);
+            },
+          ),
+          const SizedBox(width: 8),
+          MaterialButton(
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(8),
+              side: BorderSide(color: Colors.black.withOpacity(0.5)),
+            ),
+            minWidth: 56,
+            height: 56,
+            color: Colors.white,
+            child: Icon(
+              Icons.arrow_forward,
+              color: Colors.black.withOpacity(0.5),
+            ),
+            onPressed: () {
+              Navigator.of(context).pop(true);
+            },
+          ),
+        ],
+      ),
     );
   }
 }

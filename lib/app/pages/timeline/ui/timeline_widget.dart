@@ -12,12 +12,16 @@ import 'package:sirah/shared/util/loader.dart';
 
 typedef ShowMenuCallback = Function();
 
+// enum FurtherActionEnum { routeToNextEvent, routeToPreviousEvent, doNothing }
+
 class TimelineWidget extends StatefulWidget {
   // final ShowMenuCallback showMenu;
   const TimelineWidget({
     Key? key,
-    // required this.showMenu,
+    this.timeline,
   }) : super(key: key);
+
+  final Timeline? timeline;
 
   @override
   _TimelineWidgetState createState() => _TimelineWidgetState();
@@ -32,6 +36,7 @@ class _TimelineWidgetState extends State<TimelineWidget> {
   bool zooming = false;
 
   TapTarget? _touchedBubble;
+  bool? _nextPressedInDetailsPage;
 
   final GlobalKey<ScaffoldState> _key = GlobalKey();
 
@@ -41,46 +46,54 @@ class _TimelineWidgetState extends State<TimelineWidget> {
     super.initState();
   }
 
-  Future<void> _zoom({required bool zoomIn}) async {
-    Offset _f = Offset(MediaQuery.of(context).size.width / 2,
-        MediaQuery.of(context).size.height / 2);
+  // Future<void> _zoom({required bool zoomIn}) async {
+  //   Offset _f = Offset(MediaQuery.of(context).size.width / 2,
+  //       MediaQuery.of(context).size.height / 2);
 
-    while (zooming) {
-      _scaleStart(ScaleStartDetails(
-        focalPoint: _f,
-      ));
-      _scaleUpdate(ScaleUpdateDetails(
-        scale: zoomIn ? 1.1 : 0.9,
-        horizontalScale: 1.0,
-        verticalScale: 1.0,
-        focalPoint: _f,
-      ));
-      await Future.delayed(const Duration(milliseconds: 100));
-    }
-  }
+  //   while (zooming) {
+  //     _scaleStart(ScaleStartDetails(
+  //       focalPoint: _f,
+  //     ));
+  //     _scaleUpdate(ScaleUpdateDetails(
+  //       scale: zoomIn ? 1.1 : 0.9,
+  //       horizontalScale: 1.0,
+  //       verticalScale: 1.0,
+  //       focalPoint: _f,
+  //     ));
+  //     await Future.delayed(const Duration(milliseconds: 100));
+  //   }
+  // }
 
   Future<void> _getTimeline() async {
-    setState(() {
-      _timeline = null;
-    });
-    TimelineApi _api = HttpTimelineApi();
-    d.Either<String, Timeline> _result =
-        await _api.getTopicList(forceRefresh: true);
-    _result.fold((String error) {
-      if (kDebugMode) {
-        print('show error');
-      }
-    }, (Timeline timeline) {
-      _timeline = timeline;
-      scaleProper();
-      setState(() {});
-    });
+    if (widget.timeline == null) {
+      TimelineApi _api = HttpTimelineApi();
+      d.Either<String, Timeline> _result =
+          await _api.getTopicList(forceRefresh: true);
+      _result.fold((String error) {
+        if (kDebugMode) {
+          print('show error');
+        }
+      }, (Timeline timeline) {
+        _timeline = timeline;
+        setState(() {});
+      });
+    } else {
+      _timeline = widget.timeline;
+    }
+    scaleProper();
   }
 
-  Future<void> scaleProper() async {
-    await Future.delayed(const Duration(milliseconds: 500));
-    _timeline?.setViewport(start: 564, end: 590, animate: true);
-    setState(() {});
+  Future<void> scaleProper({double? start, double? end}) async {
+    await Future.delayed(const Duration(milliseconds: 100));
+    if (_timeline?.selectedId != null) {
+      _focusOnEventByIndex(_getIndexFromEventId(_timeline?.selectedId) ?? 7);
+    } else {
+      _timeline?.setViewport(
+          start: start ?? 564, end: end ?? 590, animate: true);
+    }
+    if (mounted) {
+      setState(() {});
+    }
   }
 
   void _scaleStart(ScaleStartDetails details) {
@@ -91,12 +104,115 @@ class _TimelineWidgetState extends State<TimelineWidget> {
     _timeline!.setViewport(velocity: 0.0, animate: true);
   }
 
-  void _tapUp(TapUpDetails details) {
+  void _tapUp(TapUpDetails details) async {
     if (_touchedBubble != null) {
-      Navigator.of(context)
+      _timeline?.selectedId = _touchedBubble?.entry?.id;
+      _nextPressedInDetailsPage = await Navigator.of(context)
           .pushNamed(Routes.topicDetails, arguments: <String, dynamic>{
         'article': _touchedBubble!.entry!,
-      });
+        'timeline': _timeline,
+      }) as bool;
+      // await Future.delayed(const Duration(milliseconds: 500));
+      _doFurtherAction();
+    }
+  }
+
+  void _focusOnDesiredEntry({bool next = true}) {
+    if (_timeline?.selectedId == null) {
+      for (int i = 0; i < (_timeline?.allEntries.length ?? 0); i++) {
+        if (_timeline?.allEntries[i].start == 570.5) {
+          _timeline?.selectedId = _timeline?.allEntries[i].id;
+        }
+      }
+    }
+    int? _index = _getIndexFromEventId(_timeline?.selectedId);
+    if (next == true) {
+      if (_index == ((_timeline?.allEntries.length ?? 1) - 1)) {
+        _index = 0;
+      } else {
+        _index = ((_index ?? 0) + 1);
+      }
+    }
+    if (next == false) {
+      if (_index == 0) {
+        _index = (_timeline?.allEntries.length ?? 1) - 1;
+      } else {
+        _index = ((_index ?? 1) - 1);
+      }
+    }
+    _timeline?.selectedId = _timeline?.allEntries[_index ?? 7].id;
+    _focusOnEventByIndex(_index ?? 7);
+  }
+
+  int? _getIndexFromEventId(String? id) {
+    for (int i = 0; i < (_timeline?.allEntries.length ?? 0); i++) {
+      if (_timeline?.allEntries[i].id == id) {
+        // _timeline?.selectedId = _timeline?.allEntries[i].id;
+        return i;
+      }
+    }
+    return null;
+  }
+
+  void _focusOnEventByIndex(int index) {
+    double _year = _timeline?.allEntries[index].start ?? 570.5;
+    double _distancePrev;
+    if (index != 0) {
+      _distancePrev = (_timeline?.allEntries[index].start ?? 0) -
+          (_timeline?.allEntries[index - 1].start ?? 0);
+    } else {
+      _distancePrev = 999;
+    }
+    double _distanceNext;
+    if (index >= (_timeline?.allEntries.length ?? 1) - 1) {
+      _distanceNext = (_timeline?.allEntries[index + 1].start ?? 0) -
+          (_timeline?.allEntries[index].start ?? 0);
+    } else {
+      _distanceNext = 999;
+    }
+
+    double _distance =
+        _distancePrev > _distanceNext ? _distanceNext : _distancePrev;
+    _distance = _distance + (_distance / 2);
+    // Future.delayed(Duration(seconds: 0));
+    // scaleProper(start: _year - _distance, end: _year + _distance);
+    setState(() {
+      _timeline?.setViewport(
+          start: _year - _distance, end: _year + _distance, animate: true);
+    });
+    // Future.delayed(Duration(seconds: 0));
+  }
+
+  void _doFurtherAction() async {
+    if (_nextPressedInDetailsPage == null) {
+      return;
+    }
+    int? _index = _getIndexFromEventId(_timeline?.selectedId);
+    if (_nextPressedInDetailsPage == true) {
+      if (_index == ((_timeline?.allEntries.length ?? 1) - 1)) {
+        _index = 0;
+      } else {
+        _index = ((_index ?? 0) + 1);
+      }
+    }
+    if (_nextPressedInDetailsPage == false) {
+      if (_index == 0) {
+        _index = (_timeline?.allEntries.length ?? 1) - 1;
+      } else {
+        _index = ((_index ?? 1) - 1);
+      }
+    }
+    _timeline?.selectedId = _timeline?.allEntries[_index ?? 7].id;
+    _nextPressedInDetailsPage = null;
+    _nextPressedInDetailsPage = await Navigator.of(context)
+        .pushNamed(Routes.topicDetails, arguments: <String, dynamic>{
+      'article': _timeline?.allEntries[_index ?? 7],
+      'timeline': _timeline,
+    }) as bool?;
+    if (_nextPressedInDetailsPage != null) {
+      _doFurtherAction();
+    } else {
+      _focusOnEventByIndex(_index ?? 7);
     }
   }
 
@@ -180,7 +296,7 @@ class _TimelineWidgetState extends State<TimelineWidget> {
                     children: <Widget>[
                       IconButton(
                         icon: Icon(
-                          Icons.replay,
+                          Icons.home_outlined,
                           color: Colors.black.withOpacity(0.5),
                         ),
                         tooltip: 'Reset',
@@ -208,6 +324,7 @@ class _TimelineWidgetState extends State<TimelineWidget> {
                                 'article': TimelineEntry()
                                   ..label = 'আমাদের সম্পর্কে'
                                   ..articleFilename = 'about_us.txt',
+                                'timeline': _timeline,
                               });
                         },
                       ),
@@ -240,6 +357,8 @@ class _TimelineWidgetState extends State<TimelineWidget> {
             onTap: () {
               if (index < 1) {
                 _timeline?.selectedId = _timeline?.allEntries[index + 1].id;
+                Navigator.of(context).pop();
+                _focusOnDesiredEntry(next: false);
               }
               _timeline?.selectedId = _timeline?.allEntries[index - 1].id;
               Navigator.of(context).pop();
@@ -300,65 +419,5 @@ class _TimelineWidgetState extends State<TimelineWidget> {
         ],
       ),
     );
-  }
-
-  // double _getMinimumDistance() {
-  //   return 0.01;
-  // }
-
-  void _focusOnDesiredEntry({bool next = true}) {
-    // TimelineEntry? _currentEntry;
-    double _year = 570.5;
-    double _distance = 0.01;
-    if (_timeline?.selectedId == null) {
-      for (int i = 0; i < (_timeline?.allEntries.length ?? 0); i++) {
-        if (_timeline?.allEntries[i].start == 530) {
-          _timeline?.selectedId = _timeline?.allEntries[i].id;
-        }
-      }
-    }
-    if (_timeline?.selectedId != null) {
-      for (int i = 0; i < (_timeline?.allEntries.length ?? 0); i++) {
-        if (_timeline?.allEntries[i].id == _timeline?.selectedId) {
-          // if (_timeline?.allEntries[i].start == 570.5) {
-          //   _timeline?.selectedId = _timeline?.allEntries[i + 1].id;
-          //   continue;
-          // }
-          if (next) {
-            if (i != (_timeline?.allEntries.length ?? 0) - 1) {
-              _year = _timeline?.allEntries[i + 1].start ?? 570.5;
-              _timeline?.selectedId = _timeline?.allEntries[i + 1].id;
-              _distance = (_timeline?.allEntries[i + 1].start ?? 0) -
-                  (_timeline?.allEntries[i].start ?? 0);
-              _distance = _distance - (_distance / 5);
-            } else {
-              _year = _timeline?.allEntries[0].start ?? 570.5;
-              _timeline?.selectedId = _timeline?.allEntries[0].id;
-            }
-          } else {
-            if (i != 0) {
-              _year = _timeline?.allEntries[i - 1].start ?? 570.5;
-              _timeline?.selectedId = _timeline?.allEntries[i - 1].id;
-              double _temp = (_timeline?.allEntries[i].start ?? 0) -
-                  (_timeline?.allEntries[i - 1].start ?? 0);
-              _temp = _temp - (_temp / 5);
-              _distance = _temp > _distance ? _temp : _distance;
-            } else {
-              _year = _timeline
-                      ?.allEntries[(_timeline?.allEntries.length ?? 0) - 1]
-                      .start ??
-                  570.5;
-              _timeline?.selectedId = _timeline
-                  ?.allEntries[(_timeline?.allEntries.length ?? 0) - 1].id;
-            }
-          }
-          break;
-        }
-      }
-    }
-    setState(() {
-      _timeline?.setViewport(
-          start: _year - _distance, end: _year + _distance, animate: true);
-    });
   }
 }

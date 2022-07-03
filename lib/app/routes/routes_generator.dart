@@ -17,13 +17,16 @@ class RouteGenerator {
       case Routes.index:
         locator<AnalyticsService>().sendPageAnalytics('home page');
         return MaterialPageRoute<dynamic>(
-            builder: (_) => const TimelineWidget());
+            builder: (_) => TimelineWidget(
+                  timeline: args?['timeline'],
+                ));
       case Routes.topicDetails:
         locator<AnalyticsService>()
             .sendPageAnalytics((args?['article'] as TimelineEntry).label);
         return MaterialPageRoute<dynamic>(
             builder: (_) => ArticleWidget(
                   article: args?['article'],
+                  timeline: args?['timeline'],
                 ));
 
       default:
