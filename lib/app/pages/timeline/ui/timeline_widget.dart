@@ -2,12 +2,14 @@ import 'package:connectivity/connectivity.dart';
 import 'package:dartz/dartz.dart' as d;
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sirah/app/pages/timeline/model/timeline.dart';
 import 'package:sirah/app/pages/timeline/model/timeline_entry.dart';
 import 'package:sirah/app/pages/timeline/repo/timeline_repo.dart';
 import 'package:sirah/app/pages/timeline/widget/timeline_render_widget.dart';
 import 'package:sirah/app/pages/timeline/util/timeline_utlis.dart';
 import 'package:sirah/app/routes/routes.dart';
+import 'package:sirah/shared/preference.dart';
 import 'package:sirah/shared/util/loader.dart';
 
 typedef ShowMenuCallback = Function();
@@ -167,16 +169,22 @@ class _TimelineWidgetState extends State<TimelineWidget> {
     } else {
       _timeline = widget.timeline;
     }
-    scaleProper();
+    double? savedStart = await SharedPref.getEventStart();
+    await Future.delayed(const Duration(milliseconds: 100));
+    if (savedStart == null) {
+      scaleProper();
+    } else {
+      int? _index = _getIndexFromEventStartDate(savedStart);
+      _timeline?.selectedId = _timeline?.allEntries[_index ?? 7].id;
+      _focusOnEventByIndex(_index ?? 7);
+    }
   }
 
-  Future<void> scaleProper({double? start, double? end}) async {
-    await Future.delayed(const Duration(milliseconds: 100));
+  Future<void> scaleProper() async {
     if (_timeline?.selectedId != null) {
       _focusOnEventByIndex(_getIndexFromEventId(_timeline?.selectedId) ?? 7);
     } else {
-      _timeline?.setViewport(
-          start: start ?? 564, end: end ?? 590, animate: true);
+      _timeline?.setViewport(start: 564, end: 590, animate: true);
     }
     if (mounted) {
       setState(() {});
@@ -194,12 +202,12 @@ class _TimelineWidgetState extends State<TimelineWidget> {
   void _tapUp(TapUpDetails details) async {
     if (_touchedBubble != null) {
       _timeline?.selectedId = _touchedBubble?.entry?.id;
+      SharedPref.setEventStart(year: _touchedBubble?.entry?.start ?? 570.5);
       _nextPressedInDetailsPage = await Navigator.of(context)
           .pushNamed(Routes.topicDetails, arguments: <String, dynamic>{
         'article': _touchedBubble!.entry!,
         'timeline': _timeline,
       }) as bool?;
-      // await Future.delayed(const Duration(milliseconds: 500));
       _doFurtherAction();
     }
   }
@@ -209,6 +217,7 @@ class _TimelineWidgetState extends State<TimelineWidget> {
       for (int i = 0; i < (_timeline?.allEntries.length ?? 0); i++) {
         if (_timeline?.allEntries[i].start == 570.5) {
           _timeline?.selectedId = _timeline?.allEntries[i].id;
+          SharedPref.setEventStart(year: 570.5);
         }
       }
     }
@@ -228,6 +237,8 @@ class _TimelineWidgetState extends State<TimelineWidget> {
       }
     }
     _timeline?.selectedId = _timeline?.allEntries[_index ?? 7].id;
+    SharedPref.setEventStart(
+        year: _timeline?.allEntries[_index ?? 7].start ?? 570.5);
     setState(() {
       _focusOnEventByIndex(_index ?? 7);
     });
@@ -236,7 +247,15 @@ class _TimelineWidgetState extends State<TimelineWidget> {
   int? _getIndexFromEventId(String? id) {
     for (int i = 0; i < (_timeline?.allEntries.length ?? 0); i++) {
       if (_timeline?.allEntries[i].id == id) {
-        // _timeline?.selectedId = _timeline?.allEntries[i].id;
+        return i;
+      }
+    }
+    return null;
+  }
+
+  int? _getIndexFromEventStartDate(double? year) {
+    for (int i = 0; i < (_timeline?.allEntries.length ?? 0); i++) {
+      if (_timeline?.allEntries[i].start == year) {
         return i;
       }
     }
@@ -289,6 +308,8 @@ class _TimelineWidgetState extends State<TimelineWidget> {
       }
     }
     _timeline?.selectedId = _timeline?.allEntries[_index ?? 7].id;
+    SharedPref.setEventStart(
+        year: _timeline?.allEntries[_index ?? 7].start ?? 570.5);
     _nextPressedInDetailsPage = null;
     _nextPressedInDetailsPage = await Navigator.of(context)
         .pushNamed(Routes.topicDetails, arguments: <String, dynamic>{
@@ -396,6 +417,7 @@ class _TimelineWidgetState extends State<TimelineWidget> {
                             _getTimeline();
                           }
                           _timeline?.selectedId = null;
+                          SharedPref.setEventStart(year: 570.5);
                           setState(() {});
                         },
                       ),

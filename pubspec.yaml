@@ -25,6 +25,7 @@ dependencies:
   dartz: ^0.10.1
   # fab_circular_menu: ^1.0.2
   connectivity: ^3.0.6
+  shared_preferences: ^2.0.15
 
 dev_dependencies:
   flutter_test:
