@@ -141,7 +141,9 @@ class _TimelineWidgetState extends State<TimelineWidget> {
       }
     }
     _timeline?.selectedId = _timeline?.allEntries[_index ?? 7].id;
-    _focusOnEventByIndex(_index ?? 7);
+    setState(() {
+      _focusOnEventByIndex(_index ?? 7);
+    });
   }
 
   int? _getIndexFromEventId(String? id) {
@@ -165,22 +167,19 @@ class _TimelineWidgetState extends State<TimelineWidget> {
     }
     double _distanceNext;
     if (index >= (_timeline?.allEntries.length ?? 1) - 1) {
+      _distanceNext = 999;
+    } else {
       _distanceNext = (_timeline?.allEntries[index + 1].start ?? 0) -
           (_timeline?.allEntries[index].start ?? 0);
-    } else {
-      _distanceNext = 999;
     }
 
     double _distance =
         _distancePrev > _distanceNext ? _distanceNext : _distancePrev;
     _distance = _distance + (_distance / 2);
-    // Future.delayed(Duration(seconds: 0));
-    // scaleProper(start: _year - _distance, end: _year + _distance);
     setState(() {
       _timeline?.setViewport(
           start: _year - _distance, end: _year + _distance, animate: true);
     });
-    // Future.delayed(Duration(seconds: 0));
   }
 
   void _doFurtherAction() async {
