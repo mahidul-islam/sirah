@@ -18,12 +18,12 @@ typedef ShowMenuCallback = Function();
 
 class TimelineWidget extends StatefulWidget {
   // final ShowMenuCallback showMenu;
-  const TimelineWidget({
+  TimelineWidget({
     Key? key,
     this.timeline,
   }) : super(key: key);
 
-  final Timeline? timeline;
+  Timeline? timeline;
 
   @override
   _TimelineWidgetState createState() => _TimelineWidgetState();
@@ -162,6 +162,7 @@ class _TimelineWidgetState extends State<TimelineWidget> {
 
   Future<void> _getTimeline() async {
     if (widget.timeline == null) {
+      _timeline = null;
       TimelineApi _api = HttpTimelineApi();
       d.Either<String, Timeline> _result =
           await _api.getTopicList(forceRefresh: true);
@@ -175,6 +176,7 @@ class _TimelineWidgetState extends State<TimelineWidget> {
       });
     } else {
       _timeline = widget.timeline;
+      widget.timeline = null;
     }
     double? savedStart = await SharedPref.getEventStart();
     await Future.delayed(const Duration(milliseconds: 100));
@@ -424,7 +426,7 @@ class _TimelineWidgetState extends State<TimelineWidget> {
                             _getTimeline();
                           }
                           _timeline?.selectedId = null;
-                          SharedPref.setEventStart(year: 570.5);
+                          // SharedPref.setEventStart(year: 570.5);
                           setState(() {});
                         },
                       ),
@@ -497,6 +499,12 @@ class _TimelineWidgetState extends State<TimelineWidget> {
                   child: Text(
                 '${_timeline?.allEntries[index].label}',
                 maxLines: 2,
+                style: TextStyle(
+                  color:
+                      _timeline?.allEntries[index].id == _timeline?.selectedId
+                          ? const Color.fromARGB(255, 202, 79, 63)
+                          : Colors.black,
+                ),
               )),
             ),
           );
