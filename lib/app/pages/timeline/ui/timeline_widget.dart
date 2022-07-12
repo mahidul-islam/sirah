@@ -47,7 +47,10 @@ class _TimelineWidgetState extends State<TimelineWidget> {
 
   @override
   void initState() {
-    _getTimeline();
+    _getTimeline().then((value) {
+      Future.delayed(const Duration(seconds: 0));
+      _focusBookmarked();
+    });
     super.initState();
   }
 
@@ -116,17 +119,6 @@ class _TimelineWidgetState extends State<TimelineWidget> {
                           itemBuilder: (BuildContext context, int index) {
                             return GestureDetector(
                               onTap: () {
-                                // if (index < 1) {
-                                //   _timeline?.selectedId =
-                                //       _serchResult[index + 1].id;
-                                //   Navigator.of(context).pop();
-                                //   _focusOnDesiredEntry(next: false);
-                                //   return;
-                                // }
-                                // _timeline?.selectedId =
-                                //     _serchResult[index - 1].id;
-                                // Navigator.of(context).pop();
-                                // _focusOnDesiredEntry(next: true);
                                 int? _index = _getIndexFromEventStartDate(
                                     _serchResult[index].start);
                                 _timeline?.selectedId =
@@ -172,29 +164,46 @@ class _TimelineWidgetState extends State<TimelineWidget> {
         }
       }, (Timeline timeline) {
         _timeline = timeline;
-        setState(() {});
       });
     } else {
       _timeline = widget.timeline;
       widget.timeline = null;
     }
+
+    double? savedStart = await SharedPref.getEventStart();
+    if (savedStart != null) {
+      int? _index = _getIndexFromEventStartDate(savedStart);
+      if (_index != null) {
+        _timeline?.selectedId = _timeline?.allEntries[_index].id;
+      }
+    }
+    setState(() {});
+  }
+
+  Future<void> _focusBookmarked() async {
     double? savedStart = await SharedPref.getEventStart();
     await Future.delayed(const Duration(milliseconds: 100));
     if (savedStart == null) {
       scaleProper();
     } else {
       int? _index = _getIndexFromEventStartDate(savedStart);
-      _timeline?.selectedId = _timeline?.allEntries[_index ?? 7].id;
-      _focusOnEventByIndex(_index ?? 7);
+      if (_index != null) {
+        _timeline?.selectedId = _timeline?.allEntries[_index].id;
+        _focusOnEventByIndex(_index);
+      }
     }
   }
 
   Future<void> scaleProper() async {
     if (_timeline?.selectedId != null) {
-      _focusOnEventByIndex(_getIndexFromEventId(_timeline?.selectedId) ?? 7);
+      int? _index = _getIndexFromEventId(_timeline?.selectedId);
+      if (_index != null) {
+        _focusOnEventByIndex(_index);
+      }
     } else {
       _timeline?.setViewport(start: 564, end: 590, animate: true);
     }
+    await Future.delayed(const Duration(milliseconds: 100));
     if (mounted) {
       setState(() {});
     }
@@ -412,24 +421,41 @@ class _TimelineWidgetState extends State<TimelineWidget> {
                     children: <Widget>[
                       IconButton(
                         icon: Icon(
-                          Icons.home_outlined,
+                          _timeline?.selectedId != null
+                              ? Icons.bookmark_outline
+                              : Icons.home_outlined,
                           color: Colors.black.withOpacity(0.5),
                         ),
                         tooltip: 'Reset',
                         onPressed: () async {
                           ConnectivityResult _connect =
                               await Connectivity().checkConnectivity();
-                          if (_connect == ConnectivityResult.none) {
+                          if (_connect != ConnectivityResult.none) {
                             _timeline?.setViewport(
                                 start: 564, end: 590, animate: true);
-                          } else {
-                            _getTimeline();
+                            await _getTimeline();
                           }
-                          _timeline?.selectedId = null;
-                          // SharedPref.setEventStart(year: 570.5);
-                          setState(() {});
+
+                          _timeline?.selectedId != null
+                              ? _timeline?.setViewport(
+                                  start: 564, end: 590, animate: true)
+                              : _focusBookmarked();
                         },
                       ),
+                      // Visibility(
+                      //   visible: _timeline?.selectedId != null,
+                      //   child: IconButton(
+                      //     icon: Icon(
+                      //       Icons.bookmark_outline,
+                      //       color: Colors.black.withOpacity(0.5),
+                      //     ),
+                      //     tooltip: 'Bookmark',
+                      //     onPressed: () async {
+                      //       await scaleProper();
+                      //       setState(() {});
+                      //     },
+                      //   ),
+                      // ),
                       IconButton(
                         icon: Icon(
                           Icons.search,
