@@ -2,7 +2,6 @@ import 'package:connectivity/connectivity.dart';
 import 'package:dartz/dartz.dart' as d;
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sirah/app/pages/timeline/model/timeline.dart';
 import 'package:sirah/app/pages/timeline/model/timeline_entry.dart';
 import 'package:sirah/app/pages/timeline/repo/timeline_repo.dart';
@@ -184,7 +183,7 @@ class _TimelineWidgetState extends State<TimelineWidget> {
     double? savedStart = await SharedPref.getEventStart();
     await Future.delayed(const Duration(milliseconds: 100));
     if (savedStart == null) {
-      scaleProper();
+      _timeline?.setViewport(start: 564, end: 590, animate: true);
     } else {
       int? _index = _getIndexFromEventStartDate(savedStart);
       if (_index != null) {
@@ -194,20 +193,20 @@ class _TimelineWidgetState extends State<TimelineWidget> {
     }
   }
 
-  Future<void> scaleProper() async {
-    if (_timeline?.selectedId != null) {
-      int? _index = _getIndexFromEventId(_timeline?.selectedId);
-      if (_index != null) {
-        _focusOnEventByIndex(_index);
-      }
-    } else {
-      _timeline?.setViewport(start: 564, end: 590, animate: true);
-    }
-    await Future.delayed(const Duration(milliseconds: 100));
-    if (mounted) {
-      setState(() {});
-    }
-  }
+  // Future<void> scaleProper() async {
+  //   if (_timeline?.selectedId != null) {
+  //     int? _index = _getIndexFromEventId(_timeline?.selectedId);
+  //     if (_index != null) {
+  //       _focusOnEventByIndex(_index);
+  //     }
+  //   } else {
+  // _timeline?.setViewport(start: 564, end: 590, animate: true);
+  //   }
+  //   await Future.delayed(const Duration(milliseconds: 100));
+  //   if (mounted) {
+  //     setState(() {});
+  //   }
+  // }
 
   void _scaleStart(ScaleStartDetails details) {
     _lastFocalPoint = details.focalPoint;
@@ -419,43 +418,37 @@ class _TimelineWidgetState extends State<TimelineWidget> {
                   ),
                   Row(
                     children: <Widget>[
-                      IconButton(
-                        icon: Icon(
-                          _timeline?.selectedId != null
-                              ? Icons.bookmark_outline
-                              : Icons.home_outlined,
-                          color: Colors.black.withOpacity(0.5),
-                        ),
-                        tooltip: 'Reset',
-                        onPressed: () async {
-                          ConnectivityResult _connect =
-                              await Connectivity().checkConnectivity();
-                          if (_connect != ConnectivityResult.none) {
+                      Visibility(
+                        visible: _timeline != null,
+                        child: IconButton(
+                          icon: Icon(
+                            // _timeline?.selectedId != null
+                            // ?
+                            // Icons.bookmark_outline
+                            // :
+                            Icons.home_outlined,
+                            color: Colors.black.withOpacity(0.5),
+                          ),
+                          tooltip: 'Reset',
+                          onPressed: () async {
+                            ConnectivityResult _connect =
+                                await Connectivity().checkConnectivity();
+                            if (_connect != ConnectivityResult.none) {
+                              // _timeline?.setViewport(
+                              //     start: 564, end: 590, animate: true);
+                              await _getTimeline();
+                            }
+                            // _timeline?.selectedId == null
+                            // ?
                             _timeline?.setViewport(
                                 start: 564, end: 590, animate: true);
-                            await _getTimeline();
-                          }
-
-                          _timeline?.selectedId != null
-                              ? _timeline?.setViewport(
-                                  start: 564, end: 590, animate: true)
-                              : _focusBookmarked();
-                        },
+                            await Future.delayed(
+                                    const Duration(milliseconds: 100))
+                                .then((value) => setState(() {}));
+                            // : _focusBookmarked();
+                          },
+                        ),
                       ),
-                      // Visibility(
-                      //   visible: _timeline?.selectedId != null,
-                      //   child: IconButton(
-                      //     icon: Icon(
-                      //       Icons.bookmark_outline,
-                      //       color: Colors.black.withOpacity(0.5),
-                      //     ),
-                      //     tooltip: 'Bookmark',
-                      //     onPressed: () async {
-                      //       await scaleProper();
-                      //       setState(() {});
-                      //     },
-                      //   ),
-                      // ),
                       IconButton(
                         icon: Icon(
                           Icons.search,
