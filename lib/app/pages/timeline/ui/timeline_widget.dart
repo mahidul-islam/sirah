@@ -200,7 +200,7 @@ class _TimelineWidgetState extends State<TimelineWidget> {
   //       _focusOnEventByIndex(_index);
   //     }
   //   } else {
-  // _timeline?.setViewport(start: 564, end: 590, animate: true);
+  //     _timeline?.setViewport(start: 564, end: 590, animate: true);
   //   }
   //   await Future.delayed(const Duration(milliseconds: 100));
   //   if (mounted) {
@@ -449,6 +449,20 @@ class _TimelineWidgetState extends State<TimelineWidget> {
                           },
                         ),
                       ),
+                      // Visibility(
+                      //   visible: _timeline?.selectedId != null,
+                      //   child: IconButton(
+                      //     icon: Icon(
+                      //       Icons.bookmark_outline,
+                      //       color: Colors.black.withOpacity(0.5),
+                      //     ),
+                      //     tooltip: 'Bookmark',
+                      //     onPressed: () async {
+                      //       await scaleProper();
+                      //       setState(() {});
+                      //     },
+                      //   ),
+                      // ),
                       IconButton(
                         icon: Icon(
                           Icons.search,
