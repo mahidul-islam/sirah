@@ -104,6 +104,8 @@ class TimelineRenderObject extends RenderBox {
     double renderEnd = _timeline.renderEnd;
     double scale = size.height / (renderEnd - renderStart);
 
+    _tapTargets.clear();
+
     //canvas.drawRect(new Offset(0.0, 0.0) & new Size(100.0, 100.0), new Paint()..color = Colors.red);
     _ticks.paint(
         context, offset, -renderStart * scale, scale, size.height, timeline);
