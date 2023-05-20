@@ -38,8 +38,27 @@
   </script>
   <!-- This script adds the flutter initialization JS code -->
   <script src="flutter.js" defer></script>
+  <style>
+    .container {
+        width: 100vw;
+        height: 100vh;
+        display: flex;
+        /* Default Axis is X*/
+        justify-content: center;
+        /* Main Axis */
+        align-items: center;
+        /* Cross Axis */
+    }
+    .indicator {
+        width: 25vw;
+        rotate: 70deg;
+    }
+  </style>
 </head>
-<body>
+<body style="overflow: hidden">
+  <div id="loader" class="container">
+      <img class="indicator" src="./assets/loader.gif" />
+  </div>
   <script>
     window.addEventListener('load', function(ev) {
       // Download main.dart.js
