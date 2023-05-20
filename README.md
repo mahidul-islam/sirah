@@ -1,17 +1,16 @@
-# sirah
+# Sirah
 
-A Project Mixed with `Dream`
+A Project Mixed with `Dream`. 
 
-## Getting Started
+## Deployment url
 
-To build 
+Project Console: https://console.firebase.google.com/u/0/project/islamic-history-timeline/overview
 
-```
-peanut --web-renderer canvaskit 
-```
+Hosting URL: https://sirah.arrijal.com
 
-To deploy 
+## To deploy:
 
 ```
-git push origin --set-upstream gh-pages
+flutter build web    
+firebase deploy --only hosting
 ```
