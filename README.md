@@ -11,6 +11,6 @@ Hosting URL: https://sirah.arrijal.com
 ## To deploy:
 
 ```
-flutter build web --web-renderer canvaskit
+fvm flutter build web --web-renderer canvaskit
 firebase deploy --only hosting
 ```
