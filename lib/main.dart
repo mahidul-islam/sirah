@@ -7,6 +7,7 @@ import 'package:sirah/shared/locator.dart';
 
 // import 'main_menu/main_menu.dart';
 import 'package:flutter/material.dart';
+import 'package:sirah/size_restriction_widget.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -14,8 +15,6 @@ Future<void> main() async {
     options: DefaultFirebaseOptions.currentPlatform,
   );
   await setupLocator();
-  BlocOverrides.runZoned(
-    () => runApp(const SirahApp()),
-    blocObserver: AppBlocObserver(),
-  );
+  Bloc.observer = AppBlocObserver();
+  runApp(const SizeRestrictorWidget(child: SirahApp()));
 }

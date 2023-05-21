@@ -53,23 +53,23 @@ class _TimelineWidgetState extends State<TimelineWidget> {
     super.initState();
   }
 
-  // Future<void> _zoom({required bool zoomIn}) async {
-  //   Offset _f = Offset(MediaQuery.of(context).size.width / 2,
-  //       MediaQuery.of(context).size.height / 2);
+  Future<void> _zoom({required bool zoomIn}) async {
+    Offset _f = Offset(MediaQuery.of(context).size.width / 2,
+        MediaQuery.of(context).size.height / 2);
 
-  //   while (zooming) {
-  //     _scaleStart(ScaleStartDetails(
-  //       focalPoint: _f,
-  //     ));
-  //     _scaleUpdate(ScaleUpdateDetails(
-  //       scale: zoomIn ? 1.1 : 0.9,
-  //       horizontalScale: 1.0,
-  //       verticalScale: 1.0,
-  //       focalPoint: _f,
-  //     ));
-  //     await Future.delayed(const Duration(milliseconds: 100));
-  //   }
-  // }
+    while (zooming) {
+      _scaleStart(ScaleStartDetails(
+        focalPoint: _f,
+      ));
+      _scaleUpdate(ScaleUpdateDetails(
+        scale: zoomIn ? 1.1 : 0.9,
+        horizontalScale: 1.0,
+        verticalScale: 1.0,
+        focalPoint: _f,
+      ));
+      await Future.delayed(const Duration(milliseconds: 50));
+    }
+  }
 
   void openSearchBox() {
     showDialog(
@@ -496,9 +496,15 @@ class _TimelineWidgetState extends State<TimelineWidget> {
               ),
             ),
             Positioned(
-                right: 16,
-                bottom: MediaQuery.of(context).padding.bottom + 24,
-                child: _getNextPrev()),
+              right: 16,
+              bottom: MediaQuery.of(context).padding.bottom + 24,
+              child: _getNextPrev(),
+            ),
+            Positioned(
+              right: 16,
+              top: MediaQuery.of(context).padding.top + 200,
+              child: _getZoomInOut(),
+            ),
           ],
         ),
       ),
@@ -583,6 +589,78 @@ class _TimelineWidgetState extends State<TimelineWidget> {
             onPressed: () {
               _focusOnDesiredEntry(next: true);
             },
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _getZoomInOut() {
+    return SizedBox(
+      width: 56.0,
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.spaceAround,
+        children: <Widget>[
+          GestureDetector(
+            onTapDown: (_) {
+              zooming = true;
+              _zoom(zoomIn: true);
+            },
+            onTapUp: (_) {
+              zooming = false;
+            },
+            child: Container(
+              height: 48,
+              width: 48,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: Colors.white,
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.1),
+                    blurRadius: 2.0,
+                    spreadRadius: 0.0,
+                    offset: const Offset(
+                        2.0, 2.0), // shadow direction: bottom right
+                  )
+                ],
+              ),
+              child: Icon(
+                Icons.zoom_in,
+                color: Colors.black.withOpacity(0.5),
+              ),
+            ),
+          ),
+          const SizedBox(height: 8),
+          GestureDetector(
+            onTapDown: (_) {
+              zooming = true;
+              _zoom(zoomIn: false);
+            },
+            onTapUp: (_) {
+              zooming = false;
+            },
+            child: Container(
+              height: 48,
+              width: 48,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: Colors.white,
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.1),
+                    blurRadius: 2.0,
+                    spreadRadius: 0.0,
+                    offset: const Offset(
+                        2.0, 2.0), // shadow direction: bottom right
+                  )
+                ],
+              ),
+              child: Icon(
+                Icons.zoom_out,
+                color: Colors.black.withOpacity(0.5),
+              ),
+            ),
           ),
         ],
       ),
