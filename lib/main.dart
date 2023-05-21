@@ -10,13 +10,6 @@ import 'package:flutter/material.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  // await Firebase.initializeApp(
-  //   options: const FirebaseOptions(
-  //       apiKey: "AIzaSyDzHsngze_XrAdzTvhukDBttfK8i_swMGc",
-  //       appId: "1:869608716212:web:1763652215ac5ad6d0e4e1",
-  //       messagingSenderId: "869608716212",
-  //       projectId: "sirah-muhammad-s"),
-  // );
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
