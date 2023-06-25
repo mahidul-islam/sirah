@@ -1,3 +1,5 @@
+// ignore_for_file: constant_identifier_names
+
 class SharedVariable {
   int activeUser = 1;
   static String getBaseUrl({int activeUser = 1}) {

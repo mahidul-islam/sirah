@@ -1,3 +1,5 @@
+// ignore_for_file: constant_identifier_names
+
 import 'package:firebase_analytics/firebase_analytics.dart';
 
 enum CustomUserEventsAnalytics {

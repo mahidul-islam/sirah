@@ -17,12 +17,12 @@ typedef ShowMenuCallback = Function();
 
 class TimelineWidget extends StatefulWidget {
   // final ShowMenuCallback showMenu;
-  TimelineWidget({
+  const TimelineWidget({
     Key? key,
-    this.timeline,
+    required this.timeline,
   }) : super(key: key);
 
-  Timeline? timeline;
+  final Timeline? timeline;
 
   @override
   _TimelineWidgetState createState() => _TimelineWidgetState();
@@ -166,7 +166,6 @@ class _TimelineWidgetState extends State<TimelineWidget> {
       });
     } else {
       _timeline = widget.timeline;
-      widget.timeline = null;
     }
 
     double? savedStart = await SharedPref.getEventStart();

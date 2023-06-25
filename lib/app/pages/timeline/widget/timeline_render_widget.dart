@@ -88,17 +88,12 @@ class TimelineRenderObject extends RenderBox {
 
   @override
   void performLayout() {
-    if (_timeline != null) {
-      _timeline.setViewport(height: size.height, animate: true);
-    }
+    _timeline.setViewport(height: size.height, animate: true);
   }
 
   @override
   void paint(PaintingContext context, Offset offset) {
     final Canvas canvas = context.canvas;
-    if (_timeline == null) {
-      return;
-    }
 
     double renderStart = _timeline.renderStart;
     double renderEnd = _timeline.renderEnd;
@@ -110,45 +105,41 @@ class TimelineRenderObject extends RenderBox {
     _ticks.paint(
         context, offset, -renderStart * scale, scale, size.height, timeline);
 
-    if (timeline.renderAssets != null) {
-      canvas.save();
-      for (TimelineAsset asset in timeline.renderAssets) {
-        if (asset.opacity > 0) {
-          double rs = 0.2 + asset.scale * 0.8;
+    canvas.save();
+    for (TimelineAsset asset in timeline.renderAssets) {
+      if (asset.opacity > 0) {
+        double rs = 0.2 + asset.scale * 0.8;
 
-          double w = asset.width! * Timeline.AssetScreenScale;
-          double h = asset.height! * Timeline.AssetScreenScale;
+        double w = asset.width! * Timeline.AssetScreenScale;
+        double h = asset.height! * Timeline.AssetScreenScale;
 
-          /// Draw the correct asset.
-          if (asset is TimelineImage) {
-            canvas.drawImageRect(
-                asset.image!,
-                Rect.fromLTWH(0.0, 0.0, asset.width!, asset.height!),
-                Rect.fromLTWH(
-                    offset.dx + size.width - w, asset.y, w * rs, h * rs),
-                Paint()
-                  ..isAntiAlias = true
-                  ..filterQuality = ui.FilterQuality.low
-                  ..color = Colors.white.withOpacity(asset.opacity));
-          }
+        /// Draw the correct asset.
+        if (asset is TimelineImage) {
+          canvas.drawImageRect(
+              asset.image!,
+              Rect.fromLTWH(0.0, 0.0, asset.width!, asset.height!),
+              Rect.fromLTWH(
+                  offset.dx + size.width - w, asset.y, w * rs, h * rs),
+              Paint()
+                ..isAntiAlias = true
+                ..filterQuality = ui.FilterQuality.low
+                ..color = Colors.white.withOpacity(asset.opacity));
         }
       }
-      canvas.restore();
     }
-    if (_timeline.entries != null) {
-      canvas.save();
-      canvas.clipRect(Rect.fromLTWH(offset.dx + Timeline.GutterLeft, offset.dy,
-          size.width - Timeline.GutterLeft, size.height));
-      drawItems(
-          context,
-          offset,
-          _timeline.entries,
-          (Timeline.GutterLeft + Timeline.LineSpacing) -
-              Timeline.DepthOffset * _timeline.renderOffsetDepth,
-          scale,
-          0);
-      canvas.restore();
-    }
+    canvas.restore();
+    canvas.save();
+    canvas.clipRect(Rect.fromLTWH(offset.dx + Timeline.GutterLeft, offset.dy,
+        size.width - Timeline.GutterLeft, size.height));
+    drawItems(
+        context,
+        offset,
+        _timeline.entries,
+        (Timeline.GutterLeft + Timeline.LineSpacing) -
+            Timeline.DepthOffset * _timeline.renderOffsetDepth,
+        scale,
+        0);
+    canvas.restore();
   }
 
   void drawItems(PaintingContext context, Offset offset,

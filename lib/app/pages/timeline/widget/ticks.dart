@@ -1,3 +1,5 @@
+// ignore_for_file: constant_identifier_names
+
 import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
