@@ -79,6 +79,7 @@ class _TimelineWidgetState extends State<TimelineWidget> {
           title: TextField(
             controller: _controller,
             autofocus: true,
+            textAlign: TextAlign.center,
             onChanged: (String text) {
               if (text.isEmpty) {
                 _serchResult = _timeline?.allEntries ?? [];
