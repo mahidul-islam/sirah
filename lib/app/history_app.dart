@@ -94,7 +94,7 @@ class _SirahAppState extends State<SirahApp> {
                     // }
                   }
                 },
-                child: child!,
+                child: child,
               ),
             );
           },
