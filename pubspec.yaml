@@ -23,8 +23,6 @@ dependencies:
   dio_http_cache: ^0.3.0
   dio: ^4.0.6
   dartz: ^0.10.1
-  # fab_circular_menu: ^1.0.2
-  # connectivity: ^3.0.6
   connectivity_plus: ^4.0.1
   shared_preferences: ^2.0.15
 
@@ -50,9 +48,9 @@ flutter_icons:
     generate: true
     image_path: "assets/sirah.png"
     background_color: "#ffffff"
-  windows:
-    generate: true
-    image_path: "assets/sirah.png"
+  # windows:
+  #   generate: true
+  #   image_path: "assets/sirah.png"
   macos:
     generate: true
     image_path: "assets/sirah.png"
